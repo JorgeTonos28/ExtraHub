@@ -1,0 +1,81 @@
+@charset "UTF-8";
+@font-face {
+  font-family: 'Geranium';
+  src: url('../../includes/fuentes/Geranium.otf') format('opentype'),
+}
+@font-face {
+  font-family: 'Honey-Jelly';
+  src: url('../../includes/fuentes/Honey Jelly.otf') format('opentype'),
+}
+@font-face {
+  font-family: 'Skyland';
+  src: url('../../includes/fuentes/Skyland.otf') format('opentype'),
+}
+body {
+    background-color: #E2F6F8; /* Este es el color más claro de tu paleta */
+    color: #05668d; /* Este es el color más oscuro para el texto */
+    font-family: 'Arial', sans-serif;
+}
+.navbar {
+    background-color: #003249;
+}
+.next-btn {
+    font-size: 25px;
+}
+.icon-animate {
+    transition: transform 0.2s ease-in-out; /* Aplica una transición suave */
+}
+
+.icon-animate:hover {
+    transform: scale(1.2); /* Aumenta el tamaño del ícono en un 10% al hacer hover */
+}
+.tinyTxt{
+    font-size: 10px;
+}
+.carousel-Text{
+    font-size:  12px;
+    margin-bottom: 0px;
+}
+
+.mx-left-3{
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+.carousel-item {
+    min-height: 200px; /* Ajusta este valor según sea necesario */
+}
+.CardTtl{
+    font-family: Honey-Jelly;
+    font-size: 30px;
+}
+#InfoEmp p{
+    margin-bottom: 0px;
+}
+#RepDet p{
+    margin-bottom: 0px;
+}
+#carouselTips {
+    height: 190px; /* Altura para pantallas grandes */
+}
+
+@media (max-width: 768px) {
+    #carouselTips {
+        height: 200px; /* Altura ajustada para pantallas más pequeñas */
+    }
+}
+.text-justify {
+    text-align: justify;
+    text-justify: inter-word;
+}
+.invisible {
+    visibility: hidden;
+    height: auto;
+    overflow: hidden;
+}
+
+.visible {
+    visibility: visible;
+    height: auto;
+}

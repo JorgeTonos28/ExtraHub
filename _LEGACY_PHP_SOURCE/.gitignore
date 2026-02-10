@@ -1,0 +1,21 @@
+node_modules
+dist
+build
+*.map
+.clasp.json
+.clasprc.json
+# Librerías completas clonadas
+**/floating-ui-master/
+**/flatpickr-master/
+
+# Tests y snapshots
+**/__tests__/
+**/*.snap
+**/*-snapshots/
+
+# Node / build basura
+**/node_modules/
+**/packages/
+**/.github/
+**/*.ts
+**/tsconfig*.json

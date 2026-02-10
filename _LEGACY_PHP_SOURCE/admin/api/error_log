@@ -1,0 +1,10 @@
+[27-Apr-2024 18:35:23 America/Santiago] PHP Warning:  Undefined array key "DiaActivo" in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[27-Apr-2024 18:35:23 America/Santiago] PHP Warning:  Trying to access array offset on value of type null in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[27-Apr-2024 19:51:47 America/Santiago] PHP Warning:  Undefined array key "0000003007" in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[28-Apr-2024 11:52:38 America/Santiago] PHP Warning:  Undefined array key "DiaActivo" in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[28-Apr-2024 11:52:38 America/Santiago] PHP Warning:  Trying to access array offset on value of type null in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[01-May-2024 16:19:24 America/Santiago] PHP Warning:  Undefined array key "DiaActivo" in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[01-May-2024 16:19:24 America/Santiago] PHP Warning:  Trying to access array offset on value of type null in /home/infotepadm/public_html/admin/api/actFechasSelecc.php on line 14
+[19-Jan-2026 14:55:02 America/Santiago] PHP Warning:  Undefined array key 0 in /home/infotepadm/public_html/admin/api/get_sheet_data.php on line 67
+[19-Jan-2026 14:55:02 America/Santiago] PHP Warning:  Undefined array key 0 in /home/infotepadm/public_html/admin/api/get_sheet_data.php on line 75
+[19-Jan-2026 14:55:02 America/Santiago] PHP Warning:  Undefined array key 0 in /home/infotepadm/public_html/admin/api/get_sheet_data.php on line 101

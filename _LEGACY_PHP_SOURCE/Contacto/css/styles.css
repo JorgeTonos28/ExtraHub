@@ -1,0 +1,51 @@
+@charset "UTF-8";
+/*!
+* Start Bootstrap - Heroic Features v5.0.6 (https://startbootstrap.com/template/heroic-features)
+* Copyright 2013-2023 Start Bootstrap
+* Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-heroic-features/blob/master/LICENSE)
+*/
+/*!
+ * Bootstrap  v5.2.3 (https://getbootstrap.com/)
+ * Copyright 2011-2022 The Bootstrap Authors
+ * Copyright 2011-2022 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
+ */
+
+body {
+  margin: 0;
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  font-weight: var(--bs-body-font-weight);
+  line-height: var(--bs-body-line-height);
+  color: var(--bs-body-color);
+  text-align: var(--bs-body-text-align);
+  background-color: var(--bs-body-bg);
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.feature {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 4rem;
+  width: 4rem;
+  font-size: 2rem;
+  position: relative;
+  top: -25px; /* Ajusta este valor para controlar qué tanto sobresale el ícono */
+}
+
+.contact-card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Agrega una sombra para dar un efecto elevado */
+    padding: 20px; /* Agrega más espacio alrededor del contenido de la tarjeta */
+    background-color: #ffcbcb; /* Fondo blanco para la tarjeta */
+    border-radius: 0.5rem; /* Bordes redondeados */
+    margin-bottom: 20px; /* Espacio debajo de la tarjeta */
+}
+
+
+.form-background {
+    background-color: #e7f1ff; /* Este es un azul claro; puedes ajustarlo según tus preferencias */
+    border-radius: 0.5rem; /* Esto proporciona bordes redondeados para el div del formulario */
+    padding: 20px; /* Agrega algo de espacio alrededor del contenido del formulario */
+}
