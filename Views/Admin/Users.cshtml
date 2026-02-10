@@ -1,32 +1,252 @@
 @model List<HubUser>
 @{
     var roles = ViewBag.Roles as List<Role> ?? [];
+    var managements = ViewBag.Managements as List<Management> ?? [];
     var departments = ViewBag.Departments as List<Department> ?? [];
     var apps = ViewBag.Apps as List<AppModule> ?? [];
+    var levels = ViewBag.Levels as List<int> ?? Enumerable.Range(1, 10).ToList();
 }
+
 <div class="panel-card p-4 slide-up">
     <h3>Crear / Modificar Usuario</h3>
-    <form method="post" action="/admin/usuarios" class="row g-2 mt-2">
+    <p class="text-muted">Busque en nómina por código, nombre o cédula. Al seleccionar, se completan los datos base automáticamente.</p>
+
+    <div class="mb-3">
+        <label class="form-label">Buscar colaborador en nómina</label>
+        <input id="payrollSearch" class="form-control" list="payrollSuggestions" placeholder="Escriba código, nombre o cédula" />
+        <datalist id="payrollSuggestions"></datalist>
+    </div>
+
+    <form method="post" action="/admin/usuarios/upsert" class="row g-3" id="userUpsertForm">
         @Html.AntiForgeryToken()
-        <div class="col-md-2"><input name="EmployeeCode" class="form-control" placeholder="Código" required /></div>
-        <div class="col-md-4"><input name="FullName" class="form-control" placeholder="Nombre" required /></div>
-        <div class="col-md-3"><input name="Email" type="email" class="form-control" placeholder="Correo" required /></div>
-        <div class="col-md-3"><input name="Position" class="form-control" placeholder="Cargo" required /></div>
-        <div class="col-md-2"><input name="CorporateLevel" type="number" min="1" max="10" class="form-control" placeholder="Nivel" required /></div>
-        <div class="col-md-3"><select name="DepartmentId" class="form-select" required>@foreach (var d in departments){<option value="@d.Id">@d.Name</option>}</select></div>
-        <div class="col-md-3"><select name="RoleId" class="form-select" required>@foreach (var r in roles){<option value="@r.Id">@r.Name</option>}</select></div>
-        <div class="col-md-4 d-flex flex-wrap gap-2 align-items-center">
-            @foreach (var a in apps) {<label class="chip"><input type="checkbox" name="apps" value="@a.Id"/> @a.Name</label>}
+
+        <div class="col-md-3">
+            <label class="form-label">Código</label>
+            <input name="EmployeeCode" id="EmployeeCode" class="form-control" required readonly />
         </div>
-        <div class="col-md-12"><button class="btn btn-dark">Crear usuario</button></div>
+        <div class="col-md-5">
+            <label class="form-label">Nombre</label>
+            <input name="FullName" id="FullName" class="form-control" required readonly />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Cédula</label>
+            <input name="Cedula" id="Cedula" class="form-control" required readonly />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Cargo</label>
+            <input name="Position" id="Position" class="form-control" required readonly />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Gerencia</label>
+            <select name="ManagementId" id="ManagementId" class="form-select" required>
+                <option value="">Seleccione</option>
+                @foreach (var m in managements)
+                {
+                    <option value="@m.Id">@m.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Departamento</label>
+            <select name="DepartmentId" id="DepartmentId" class="form-select" required>
+                <option value="">Seleccione</option>
+                @foreach (var d in departments)
+                {
+                    <option value="@d.Id" data-management="@d.ManagementId">@d.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Sueldo</label>
+            <input name="Salary" id="Salary" class="form-control" required readonly />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Nivel</label>
+            <select name="CorporateLevel" id="CorporateLevel" class="form-select" required>
+                @foreach (var lv in levels) { <option value="@lv">@lv</option> }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Correo electrónico</label>
+            <input name="Email" id="Email" type="email" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Contraseña (obligatoria al crear)</label>
+            <input name="Password" id="Password" type="password" class="form-control" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Rol</label>
+            <select name="RoleId" id="RoleId" class="form-select" required>
+                <option value="">Seleccione</option>
+                @foreach (var r in roles) { <option value="@r.Id">@r.Name</option> }
+            </select>
+        </div>
+
+        <div class="col-md-8">
+            <label class="form-label">Apps</label>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var a in apps) { <label class="chip"><input type="checkbox" name="Apps" value="@a.Id" /> @a.Name</label> }
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Nombre en firma de papelería</label>
+            <input name="SignaturePreference" id="SignaturePreference" class="form-control" placeholder="Ej.: Juan P. Pérez" />
+        </div>
+
+        <div class="col-md-6 d-flex align-items-end gap-3">
+            <div class="form-check form-switch">
+                <input name="IsRotative" value="true" class="form-check-input" type="checkbox" id="IsRotative" />
+                <label class="form-check-label" for="IsRotative">Horario rotativo</label>
+            </div>
+            <button type="button" id="copyMonday" class="btn btn-outline-dark btn-sm">Completar horarios desde lunes</button>
+        </div>
+
+        @foreach (var day in new[]{("MondayIn","Lunes"),("TuesdayIn","Martes"),("WednesdayIn","Miércoles"),("ThursdayIn","Jueves"),("FridayIn","Viernes"),("SaturdayIn","Sábado"),("SundayIn","Domingo")})
+        {
+            <div class="col-md-3">
+                <label class="form-label">@day.Item2 (entrada)</label>
+                <input type="time" name="@day.Item1" id="@day.Item1" class="form-control schedule-in" />
+                <small class="text-muted">Salida: <span id="@day.Item1-out">--:--</span></small>
+            </div>
+        }
+
+        <div class="col-12">
+            <button class="btn btn-dark">Guardar usuario</button>
+        </div>
     </form>
 </div>
 
 <div class="panel-card p-3 mt-3">
     <div class="table-responsive">
         <table class="table table-modern align-middle">
-            <thead><tr><th>Código</th><th>Nombre</th><th>Rol</th><th>Departamento</th></tr></thead>
-            <tbody>@foreach (var u in Model){<tr><td>@u.EmployeeCode</td><td>@u.FullName</td><td>@u.Role?.Name</td><td>@u.Department?.Name</td></tr>}</tbody>
+            <thead><tr><th>Código</th><th>Nombre</th><th>Cédula</th><th>Rol</th><th>Gerencia</th><th>Departamento</th><th>Correo</th></tr></thead>
+            <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.EmployeeCode</td>
+                    <td>@u.FullName</td>
+                    <td>@u.Cedula</td>
+                    <td>@u.Role?.Name</td>
+                    <td>@u.Department?.Management?.Name</td>
+                    <td>@u.Department?.Name</td>
+                    <td>@u.Email</td>
+                </tr>
+            }
+            </tbody>
         </table>
     </div>
 </div>
+
+@section Scripts {
+<script>
+(() => {
+  const payrollSearch = document.getElementById('payrollSearch');
+  const suggestions = document.getElementById('payrollSuggestions');
+  const mgmt = document.getElementById('ManagementId');
+  const dept = document.getElementById('DepartmentId');
+  const form = document.getElementById('userUpsertForm');
+
+  let timer;
+  payrollSearch?.addEventListener('input', async (e) => {
+    const q = e.target.value.trim();
+    clearTimeout(timer);
+    if (q.length < 2) return;
+    timer = setTimeout(async () => {
+      const res = await fetch(`/admin/usuarios/payroll-suggest?q=${encodeURIComponent(q)}`);
+      const items = await res.json();
+      suggestions.innerHTML = '';
+      items.forEach(i => {
+        const option = document.createElement('option');
+        option.value = `${i.employeeCode} | ${i.fullName} | ${i.cedula}`;
+        option.dataset.code = i.employeeCode;
+        suggestions.appendChild(option);
+      });
+    }, 250);
+  });
+
+  payrollSearch?.addEventListener('change', async () => {
+    const selected = [...suggestions.options].find(o => o.value === payrollSearch.value);
+    if (!selected) return;
+    const code = selected.dataset.code;
+    const res = await fetch(`/admin/usuarios/payroll/${encodeURIComponent(code)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    setVal('EmployeeCode', data.employeeCode);
+    setVal('FullName', data.fullName);
+    setVal('Cedula', data.cedula);
+    setVal('Position', data.position);
+    setVal('Salary', data.monthlySalary);
+
+    if (data.existingData) {
+      setVal('Email', data.existingData.email);
+      setVal('CorporateLevel', data.existingData.corporateLevel);
+      setVal('RoleId', data.existingData.roleId);
+      setVal('SignaturePreference', data.existingData.signaturePreference || '');
+      setVal('ManagementId', data.existingData.managementId);
+      filterDepartments();
+      setVal('DepartmentId', data.existingData.departmentId);
+      document.getElementById('IsRotative').checked = !!data.existingData.isRotative;
+      const map = ['mondayIn','tuesdayIn','wednesdayIn','thursdayIn','fridayIn','saturdayIn','sundayIn'];
+      const ids = ['MondayIn','TuesdayIn','WednesdayIn','ThursdayIn','FridayIn','SaturdayIn','SundayIn'];
+      map.forEach((k,idx)=> setVal(ids[idx], data.existingData[k] ? data.existingData[k].substring(0,5) : ''));
+      [...form.querySelectorAll('input[name="Apps"]')].forEach(c=> c.checked = data.existingData.apps.includes(parseInt(c.value)));
+    }
+    updateOutTimes();
+  });
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+
+  function filterDepartments(){
+    const m = mgmt.value;
+    [...dept.options].forEach(o=>{
+      if(!o.value){o.hidden=false;return;}
+      o.hidden = o.dataset.management !== m;
+    });
+    if (dept.selectedOptions[0]?.hidden) dept.value='';
+  }
+  mgmt?.addEventListener('change', filterDepartments);
+
+  function plus8(t){
+    if(!t) return '--:--';
+    const [h,m]=t.split(':').map(Number);
+    const dt=new Date(); dt.setHours(h,m,0,0); dt.setHours(dt.getHours()+8);
+    return `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+  }
+  function updateOutTimes(){
+    ['MondayIn','TuesdayIn','WednesdayIn','ThursdayIn','FridayIn','SaturdayIn','SundayIn'].forEach(id=>{
+      const v=document.getElementById(id).value;
+      document.getElementById(id+'-out').textContent = plus8(v);
+    });
+  }
+  document.querySelectorAll('.schedule-in').forEach(i=>i.addEventListener('input', updateOutTimes));
+  document.getElementById('copyMonday')?.addEventListener('click', ()=>{
+    const v = document.getElementById('MondayIn').value;
+    document.querySelectorAll('.schedule-in').forEach(i=> i.value=v);
+    updateOutTimes();
+  });
+
+  form?.addEventListener('submit', (e)=>{
+    const freeDays = [...form.querySelectorAll('.schedule-in')].filter(i=>!i.value).length;
+    if (freeDays !== 2) {
+      e.preventDefault();
+      alert('El horario debe contener exactamente 2 días libres.');
+      return;
+    }
+    if ([...form.querySelectorAll('input[name="Apps"]:checked')].length === 0) {
+      e.preventDefault();
+      alert('Debe seleccionar al menos una app.');
+      return;
+    }
+  });
+
+  filterDepartments();
+  updateOutTimes();
+})();
+</script>
+}

@@ -39,7 +39,7 @@ No se requiere correr `dotnet ef database update` manualmente para entorno de ej
 - Panel administrativo con side-menu moderno y módulos:
   - Dashboard (insights demo)
   - Crear/Modificar Usuario
-  - Nómina (importación Excel + búsqueda + sumatoria de salario)
+  - Nómina (importación Excel con 1 clic + búsqueda global por cualquier columna + sumatoria de salario)
   - Departamentos
   - Gerencias (nuevo)
   - Ponchado
@@ -99,3 +99,11 @@ En runtime normal, `Program.cs` ya aplica migraciones pendientes automáticament
 - El botón **Actualizar** permite cargar `.xlsx`; el proceso reemplaza la tabla de nómina para mantener sincronización completa con fuente oficial.
 - Se calcula y muestra en UI la sumatoria de salario mensual de la vista filtrada.
 - Búsqueda por `código`, `nombre` o `cédula`.
+
+
+## Módulo de Usuarios (paridad con Legacy)
+- El formulario incluye campos: `Código`, `Nombre`, `Cédula`, `Cargo`, `Gerencia`, `Departamento`, `Sueldo`, `Nivel`, `Correo`, `Contraseña`, `Rol`, `Apps`, `Horario`, `Nombre en firma de papelería`.
+- Flujo asistido por nómina: búsqueda por texto (código/nombre/cédula) y autocompletado de datos base desde nómina cargada.
+- Selects dinámicos para Gerencia/Departamento, niveles y roles según data disponible en el sistema.
+- Horario: se define hora de entrada por día; la salida se calcula en UI como `entrada + 8h`; botón para replicar lunes al resto; validación de exactamente 2 días libres.
+- Validaciones de negocio equivalentes al legacy: límites por roles administrativos, unicidad de código/correo y restricción de cargos para app Horas Extras cuando aplica.

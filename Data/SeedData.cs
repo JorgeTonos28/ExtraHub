@@ -81,7 +81,9 @@ public static class SeedData
                 CorporateLevel = 1,
                 DepartmentId = defaultDepartment.Id,
                 RoleId = adminRole.Id,
-                SignaturePreference = "digital",
+                Cedula = "000-0000000-0",
+                Salary = 0,
+                SignaturePreference = "Administrador General",
                 IsActive = true
             };
 

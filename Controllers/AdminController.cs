@@ -3,10 +3,34 @@ using ExtraHub.Api.Models;
 using ExtraHub.Api.Services;
 using ExtraHub.Api.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtraHub.Api.Controllers;
+
+public record UserUpsertRequest(
+    string EmployeeCode,
+    string FullName,
+    string Cedula,
+    string Position,
+    int ManagementId,
+    int DepartmentId,
+    decimal Salary,
+    int CorporateLevel,
+    string Email,
+    string? Password,
+    int RoleId,
+    string? SignaturePreference,
+    bool IsRotative,
+    TimeOnly? MondayIn,
+    TimeOnly? TuesdayIn,
+    TimeOnly? WednesdayIn,
+    TimeOnly? ThursdayIn,
+    TimeOnly? FridayIn,
+    TimeOnly? SaturdayIn,
+    TimeOnly? SundayIn,
+    int[] Apps);
 
 [Authorize(Policy = "AdminGeneralOnly")]
 [Route("admin")]
@@ -29,49 +53,187 @@ public class AdminController(AppDbContext db, UserRulesService rules, PayrollImp
     public async Task<IActionResult> Users()
     {
         ViewBag.Roles = await db.Roles.ToListAsync();
+        ViewBag.Managements = await db.Managements.Where(m => m.IsActive).ToListAsync();
         ViewBag.Departments = await db.Departments.Where(d => d.IsActive).ToListAsync();
         ViewBag.Apps = await db.AppModules.ToListAsync();
-        return View(await db.HubUsers.Include(u => u.Role).Include(u => u.Department).ToListAsync());
+        var levels = await db.HubUsers.Select(x => x.CorporateLevel).Distinct().OrderBy(x => x).ToListAsync();
+        ViewBag.Levels = levels.Count > 0 ? levels : Enumerable.Range(1, 10).ToList();
+
+        return View(await db.HubUsers.Include(u => u.Role).Include(u => u.Department).ThenInclude(d => d!.Management).ToListAsync());
     }
 
-    [HttpPost("usuarios")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UsersCreate(HubUser user, int[] apps)
+    [HttpGet("usuarios/payroll-suggest")]
+    public async Task<IActionResult> PayrollSuggest(string q)
     {
-        var error = await rules.ValidateBusinessRulesAsync(user);
-        if (error is not null)
+        q = (q ?? string.Empty).Trim();
+        if (q.Length < 2) return Json(Array.Empty<object>());
+
+        var items = await db.PayrollEntries
+            .Where(x => x.EmployeeCode.Contains(q) || x.FullName.Contains(q) || x.Cedula.Contains(q))
+            .OrderBy(x => x.FullName)
+            .Take(20)
+            .Select(x => new { x.EmployeeCode, x.FullName, x.Cedula })
+            .ToListAsync();
+
+        return Json(items);
+    }
+
+    [HttpGet("usuarios/payroll/{code}")]
+    public async Task<IActionResult> PayrollByCode(string code)
+    {
+        var payroll = await db.PayrollEntries.FirstOrDefaultAsync(x => x.EmployeeCode == code);
+        if (payroll is null) return NotFound(new { error = "Registro de nómina no encontrado." });
+
+        var existing = await db.HubUsers.Include(u => u.AppAccesses).Include(u => u.Role)
+            .Include(u => u.Department).ThenInclude(d => d!.Management)
+            .FirstOrDefaultAsync(u => u.EmployeeCode == code);
+        var schedule = existing is null ? null : await db.UserSchedules.FirstOrDefaultAsync(s => s.HubUserId == existing.Id);
+
+        return Json(new
         {
-            TempData["Error"] = error;
+            payroll.EmployeeCode,
+            payroll.FullName,
+            payroll.Cedula,
+            payroll.Position,
+            payroll.Department,
+            payroll.MonthlySalary,
+            existingUser = existing is not null,
+            existingData = existing is null ? null : new
+            {
+                existing.Email,
+                existing.CorporateLevel,
+                existing.RoleId,
+                existing.SignaturePreference,
+                existing.DepartmentId,
+                managementId = existing.Department!.ManagementId,
+                apps = existing.AppAccesses.Select(a => a.AppModuleId).ToArray(),
+                isRotative = schedule?.ScheduleType == "rotativo",
+                mondayIn = schedule?.MondayIn,
+                tuesdayIn = schedule?.TuesdayIn,
+                wednesdayIn = schedule?.WednesdayIn,
+                thursdayIn = schedule?.ThursdayIn,
+                fridayIn = schedule?.FridayIn,
+                saturdayIn = schedule?.SaturdayIn,
+                sundayIn = schedule?.SundayIn
+            }
+        });
+    }
+
+    [HttpPost("usuarios/upsert")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UsersUpsert([FromForm] UserUpsertRequest req)
+    {
+        if (string.IsNullOrWhiteSpace(req.EmployeeCode) || string.IsNullOrWhiteSpace(req.Email))
+        {
+            TempData["Error"] = "Código y correo son requeridos.";
             return RedirectToAction(nameof(Users));
         }
 
-        user.PasswordHash = new Microsoft.AspNetCore.Identity.PasswordHasher<HubUser>().HashPassword(user, "Temporal123!");
-        db.HubUsers.Add(user);
-        await db.SaveChangesAsync();
+        var isUpdate = await db.HubUsers.AnyAsync(u => u.EmployeeCode == req.EmployeeCode);
 
-        db.UserAppAccesses.AddRange(apps.Select(id => new UserAppAccess { HubUserId = user.Id, AppModuleId = id }));
+        var department = await db.Departments.AsNoTracking().FirstOrDefaultAsync(d => d.Id == req.DepartmentId);
+        if (department is null || department.ManagementId != req.ManagementId)
+        {
+            TempData["Error"] = "La gerencia y departamento seleccionados no son válidos.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        var user = await db.HubUsers.FirstOrDefaultAsync(u => u.EmployeeCode == req.EmployeeCode) ?? new HubUser();
+        user.EmployeeCode = req.EmployeeCode.Trim();
+        user.FullName = req.FullName.Trim();
+        user.Cedula = req.Cedula.Trim();
+        user.Position = req.Position.Trim();
+        user.DepartmentId = req.DepartmentId;
+        user.RoleId = req.RoleId;
+        user.CorporateLevel = req.CorporateLevel;
+        user.Email = req.Email.Trim();
+        user.Salary = req.Salary;
+        user.SignaturePreference = req.SignaturePreference?.Trim() ?? string.Empty;
+        user.IsActive = true;
+
+        var businessError = await rules.ValidateBusinessRulesAsync(user, req.Apps, isUpdate);
+        if (businessError is not null)
+        {
+            TempData["Error"] = businessError;
+            return RedirectToAction(nameof(Users));
+        }
+
+        var scheduleEntries = new[] { req.MondayIn, req.TuesdayIn, req.WednesdayIn, req.ThursdayIn, req.FridayIn, req.SaturdayIn, req.SundayIn };
+        var scheduleError = UserRulesService.ValidateSchedule(scheduleEntries);
+        if (scheduleError is not null)
+        {
+            TempData["Error"] = scheduleError;
+            return RedirectToAction(nameof(Users));
+        }
+
+        if (!isUpdate && string.IsNullOrWhiteSpace(req.Password))
+        {
+            TempData["Error"] = "La contraseña es obligatoria al crear usuario.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        var hasher = new PasswordHasher<HubUser>();
+
+        await using var tx = await db.Database.BeginTransactionAsync();
+
+        if (!isUpdate)
+        {
+            user.PasswordHash = hasher.HashPassword(user, req.Password!);
+            db.HubUsers.Add(user);
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            if (!string.IsNullOrWhiteSpace(req.Password))
+            {
+                user.PasswordHash = hasher.HashPassword(user, req.Password);
+            }
+            db.HubUsers.Update(user);
+            await db.SaveChangesAsync();
+
+            var previousApps = db.UserAppAccesses.Where(a => a.HubUserId == user.Id);
+            db.UserAppAccesses.RemoveRange(previousApps);
+        }
+
+        db.UserAppAccesses.AddRange(req.Apps.Distinct().Select(id => new UserAppAccess { HubUserId = user.Id, AppModuleId = id }));
+
+        var schedule = await db.UserSchedules.FirstOrDefaultAsync(s => s.HubUserId == user.Id) ?? new UserSchedule { HubUserId = user.Id };
+        schedule.ScheduleType = req.IsRotative ? "rotativo" : "fijo";
+        schedule.MondayIn = req.MondayIn;
+        schedule.TuesdayIn = req.TuesdayIn;
+        schedule.WednesdayIn = req.WednesdayIn;
+        schedule.ThursdayIn = req.ThursdayIn;
+        schedule.FridayIn = req.FridayIn;
+        schedule.SaturdayIn = req.SaturdayIn;
+        schedule.SundayIn = req.SundayIn;
+
+        if (schedule.Id == 0) db.UserSchedules.Add(schedule); else db.UserSchedules.Update(schedule);
+
         await db.SaveChangesAsync();
-        TempData["Success"] = "Usuario creado con contraseña temporal segura.";
+        await tx.CommitAsync();
+
+        TempData["Success"] = isUpdate ? "Usuario modificado correctamente." : "Usuario creado correctamente.";
         return RedirectToAction(nameof(Users));
     }
 
     [HttpGet("nomina")]
-    public async Task<IActionResult> Payroll(string? search = null, string field = "nombre")
+    public async Task<IActionResult> Payroll(string? q = null)
     {
         var query = db.PayrollEntries.AsQueryable();
-        if (!string.IsNullOrWhiteSpace(search))
+        if (!string.IsNullOrWhiteSpace(q))
         {
-            search = search.Trim();
-            query = field.ToLowerInvariant() switch
-            {
-                "codigo" => query.Where(x => x.EmployeeCode.Contains(search)),
-                "cedula" => query.Where(x => x.Cedula.Contains(search)),
-                _ => query.Where(x => x.FullName.Contains(search))
-            };
+            q = q.Trim();
+            query = query.Where(x =>
+                x.EmployeeCode.Contains(q) ||
+                x.FullName.Contains(q) ||
+                x.Cedula.Contains(q) ||
+                x.Department.Contains(q) ||
+                x.Position.Contains(q) ||
+                x.MonthlySalary.ToString().Contains(q) ||
+                x.VehicleCompensation.ToString().Contains(q));
         }
 
-        ViewBag.Search = search;
-        ViewBag.Field = field;
+        ViewBag.Query = q;
         ViewBag.TotalSalary = await query.SumAsync(x => x.MonthlySalary);
         return View(await query.OrderBy(x => x.FullName).Take(500).ToListAsync());
     }

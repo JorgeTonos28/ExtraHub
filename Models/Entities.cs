@@ -46,11 +46,13 @@ public class HubUser
     public int Id { get; set; }
     [MaxLength(20)] public string EmployeeCode { get; set; } = string.Empty;
     [MaxLength(200)] public string FullName { get; set; } = string.Empty;
+    [MaxLength(20)] public string Cedula { get; set; } = string.Empty;
     [MaxLength(200)] public string Position { get; set; } = string.Empty;
     [EmailAddress, MaxLength(200)] public string Email { get; set; } = string.Empty;
     [MaxLength(300)] public string PasswordHash { get; set; } = string.Empty;
+    [Range(0, double.MaxValue)] public decimal Salary { get; set; }
     public int CorporateLevel { get; set; }
-    [MaxLength(80)] public string SignaturePreference { get; set; } = "digital";
+    [MaxLength(120)] public string SignaturePreference { get; set; } = "";
     public bool IsActive { get; set; } = true;
     public int DepartmentId { get; set; }
     public Department? Department { get; set; }
