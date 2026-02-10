@@ -4,6 +4,7 @@ using ExtraHub.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ExtraHub.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210180316_HubModulesAndAuth")]
+    partial class HubModulesAndAuth
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,11 +87,6 @@ namespace ExtraHub.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Cedula")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<int>("CorporateLevel")
                         .HasColumnType("int");
 
@@ -126,14 +124,10 @@ namespace ExtraHub.Api.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Salary")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("SignaturePreference")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
 
                     b.HasKey("Id");
 
@@ -184,11 +178,6 @@ namespace ExtraHub.Api.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Department")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("EmployeeCode")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -199,10 +188,6 @@ namespace ExtraHub.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("MonthlySalary")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Position")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -210,10 +195,6 @@ namespace ExtraHub.Api.Migrations
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal>("VehicleCompensation")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 

@@ -1,0 +1,25 @@
+@model ExtraHub.Api.ViewModels.LandingViewModel
+<div class="hero-card slide-up">
+    <div>
+        <h1>Bienvenido, @Model.UserName</h1>
+        <p>ExtraHub centraliza herramientas internas y experiencias operativas de alto impacto para talento, administración y gestión diaria.</p>
+        @if (Model.IsAdminGeneral)
+        {
+            <a href="/admin" class="btn btn-dark mt-2"><i class="bi bi-speedometer2 me-2"></i>Ir al Panel Administrativo</a>
+        }
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    @foreach (var app in Model.Apps)
+    {
+        <div class="col-md-4">
+            <div class="module-card h-100">
+                <div class="module-icon"><i class="bi bi-box"></i></div>
+                <h5>@app.Name</h5>
+                <p>Aplicación habilitada para tu perfil.</p>
+                <a href="@app.Route" class="btn btn-outline-dark btn-sm">Abrir módulo</a>
+            </div>
+        </div>
+    }
+</div>
