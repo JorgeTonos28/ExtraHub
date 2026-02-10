@@ -8,40 +8,64 @@ public static class SeedData
 {
     public static async Task InitializeAsync(AppDbContext db, ILogger logger)
     {
-        if (!await db.Roles.AnyAsync())
+        var roleNames = new[]
         {
-            db.Roles.AddRange([
-                new Role { Id = 1, Name = AppRoles.AdministradorGerencia },
-                new Role { Id = 2, Name = AppRoles.EncargadoDepartamento },
-                new Role { Id = 3, Name = AppRoles.AyudanteDepartamento },
-                new Role { Id = 4, Name = AppRoles.Solicitante },
-                new Role { Id = 5, Name = AppRoles.AdministradorGeneral }
-            ]);
+            AppRoles.AdministradorGerencia,
+            AppRoles.EncargadoDepartamento,
+            AppRoles.AyudanteDepartamento,
+            AppRoles.Solicitante,
+            AppRoles.AdministradorGeneral
+        };
+
+        foreach (var roleName in roleNames)
+        {
+            if (!await db.Roles.AnyAsync(r => r.Name == roleName))
+            {
+                db.Roles.Add(new Role { Name = roleName });
+            }
         }
 
-        if (!await db.AppModules.AnyAsync())
+        var modules = new[]
         {
-            db.AppModules.AddRange([
-                new AppModule { Id = 1, Name = "Horas Extras", Route = "#" },
-                new AppModule { Id = 2, Name = "Refrigerios", Route = "#" },
-                new AppModule { Id = 3, Name = "Combustible", Route = "#" }
-            ]);
+            new AppModule { Name = "Horas Extras", Route = "#" },
+            new AppModule { Name = "Refrigerios", Route = "#" },
+            new AppModule { Name = "Combustible", Route = "#" }
+        };
+
+        foreach (var module in modules)
+        {
+            if (!await db.AppModules.AnyAsync(a => a.Name == module.Name))
+            {
+                db.AppModules.Add(module);
+            }
         }
 
-        if (!await db.Managements.AnyAsync())
+        if (!await db.Managements.AnyAsync(m => m.Name == "Gerencia General"))
         {
-            db.Managements.Add(new Management { Id = 1, Name = "Gerencia General" });
-        }
-
-        if (!await db.Departments.AnyAsync())
-        {
-            db.Departments.Add(new Department { Id = 1, Name = "Tecnología", ManagementId = 1, Type = "Departamento" });
+            db.Managements.Add(new Management { Name = "Gerencia General", IsActive = true });
         }
 
         await db.SaveChangesAsync();
 
+        var gerenciaGeneral = await db.Managements.FirstAsync(m => m.Name == "Gerencia General");
+
+        if (!await db.Departments.AnyAsync(d => d.Name == "Tecnología"))
+        {
+            db.Departments.Add(new Department
+            {
+                Name = "Tecnología",
+                ManagementId = gerenciaGeneral.Id,
+                Type = "Departamento",
+                IsActive = true
+            });
+            await db.SaveChangesAsync();
+        }
+
         if (!await db.HubUsers.AnyAsync(u => u.EmployeeCode == "ADMIN001"))
         {
+            var adminRole = await db.Roles.FirstAsync(r => r.Name == AppRoles.AdministradorGeneral);
+            var defaultDepartment = await db.Departments.FirstAsync(d => d.Name == "Tecnología");
+
             var hasher = new PasswordHasher<HubUser>();
             var admin = new HubUser
             {
@@ -50,17 +74,29 @@ public static class SeedData
                 Position = "Administrador General",
                 Email = "admin@extrahub.local",
                 CorporateLevel = 1,
-                DepartmentId = 1,
-                RoleId = 5,
-                SignaturePreference = "digital"
+                DepartmentId = defaultDepartment.Id,
+                RoleId = adminRole.Id,
+                SignaturePreference = "digital",
+                IsActive = true
             };
+
             admin.PasswordHash = hasher.HashPassword(admin, "Admin123!Secure");
             db.HubUsers.Add(admin);
             await db.SaveChangesAsync();
 
             var appIds = await db.AppModules.Select(a => a.Id).ToListAsync();
             db.UserAppAccesses.AddRange(appIds.Select(id => new UserAppAccess { HubUserId = admin.Id, AppModuleId = id }));
-            db.UserSchedules.Add(new UserSchedule { HubUserId = admin.Id, ScheduleType = "fijo", MondayIn = new TimeOnly(8, 0), TuesdayIn = new TimeOnly(8, 0), WednesdayIn = new TimeOnly(8, 0), ThursdayIn = new TimeOnly(8, 0), FridayIn = new TimeOnly(8, 0) });
+            db.UserSchedules.Add(new UserSchedule
+            {
+                HubUserId = admin.Id,
+                ScheduleType = "fijo",
+                MondayIn = new TimeOnly(8, 0),
+                TuesdayIn = new TimeOnly(8, 0),
+                WednesdayIn = new TimeOnly(8, 0),
+                ThursdayIn = new TimeOnly(8, 0),
+                FridayIn = new TimeOnly(8, 0)
+            });
+
             await db.SaveChangesAsync();
             logger.LogInformation("Usuario de prueba ADMIN001 seed creado.");
         }
