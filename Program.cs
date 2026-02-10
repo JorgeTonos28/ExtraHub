@@ -24,7 +24,7 @@ builder.Services
         options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization(options =>
@@ -58,6 +58,7 @@ using (var scope = app.Services.CreateScope())
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 else
 {
@@ -80,6 +81,7 @@ app.UseExceptionHandler(errorApp =>
     });
 });
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();

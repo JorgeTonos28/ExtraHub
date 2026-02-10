@@ -9,7 +9,8 @@ ExtraHub es un Hub corporativo para centralizar autenticación y acceso a aplica
 
 ## Seguridad implementada
 - Contraseñas con hash seguro (`PasswordHasher`).
-- Autenticación por cookie (`HttpOnly`, `SameSite=Strict`).
+- Autenticación por cookie (`HttpOnly`, `SameSite=Strict`, `Secure=Always`).
+- Redirección HTTPS forzada (`UseHttpsRedirection`) y HSTS en no-desarrollo.
 - Autorización basada en rol (`Administrador General` para panel admin).
 - Validaciones de reglas de negocio heredadas para creación de usuarios.
 - Manejo centralizado de excepciones con logging en consola.
@@ -83,3 +84,9 @@ dotnet ef database update
 ```
 
 En runtime normal, `Program.cs` ya aplica migraciones pendientes automáticamente.
+
+
+## Configuración HTTPS en despliegues con proxy inverso
+- Mantener TLS extremo a extremo o terminar TLS en el proxy (IIS/Nginx/Azure App Service) y reenviar tráfico interno seguro.
+- No deshabilitar `UseHttpsRedirection` ni `Secure` en cookies de autenticación.
+- Validar certificados y cabeceras de proxy en entornos productivos.
