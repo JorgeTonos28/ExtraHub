@@ -1,0 +1,25 @@
+@model ExtraHub.Api.ViewModels.LandingViewModel
+<div class="glass p-4 mb-4">
+    <h1 class="text-white">Bienvenido, @Model.UserName</h1>
+    <p class="text-white-50 mb-0">ExtraHub centraliza acceso a aplicaciones internas, administración de usuarios, nómina y sincronización de ponchados.</p>
+</div>
+
+@if (Model.IsAdminGeneral)
+{
+    <a href="/admin" class="btn btn-warning mb-3"><i class="bi bi-speedometer2"></i> Ir al Panel Administrativo</a>
+}
+
+<div class="row g-3">
+    @foreach (var app in Model.Apps)
+    {
+        <div class="col-md-4">
+            <div class="card glass h-100">
+                <div class="card-body text-white">
+                    <h5>@app.Name</h5>
+                    <p class="text-white-50">Acceso habilitado para su perfil.</p>
+                    <a href="@app.Route" class="btn btn-outline-light btn-sm">Abrir</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

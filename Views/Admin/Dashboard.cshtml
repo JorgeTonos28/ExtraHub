@@ -1,0 +1,15 @@
+@model ExtraHub.Api.ViewModels.AdminDashboardViewModel
+<h2 class="text-white mb-4">Panel Administrativo</h2>
+<div class="row g-3">
+    <div class="col-md-3"><div class="glass p-3 text-white">Usuarios: <strong>@Model.TotalUsers</strong></div></div>
+    <div class="col-md-3"><div class="glass p-3 text-white">Departamentos activos: <strong>@Model.ActiveDepartments</strong></div></div>
+    <div class="col-md-3"><div class="glass p-3 text-white">Nómina: <strong>@Model.TotalPayroll</strong></div></div>
+    <div class="col-md-3"><div class="glass p-3 text-white">Ponchados: <strong>@Model.TotalPunches</strong></div></div>
+</div>
+<div class="mt-4 d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-light" href="/admin/usuarios">Crear/Modificar Usuario</a>
+    <a class="btn btn-outline-light" href="/admin/nomina">Nómina</a>
+    <a class="btn btn-outline-light" href="/admin/departamentos">Departamentos</a>
+    <a class="btn btn-outline-light" href="/admin/gerencias">Gerencias</a>
+    <a class="btn btn-outline-light" href="/admin/ponchado">Ponchado</a>
+</div>

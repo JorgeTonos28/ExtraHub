@@ -1,61 +1,92 @@
+using System.Security.Claims;
 using ExtraHub.Api.Data;
+using ExtraHub.Api.Services;
+using ExtraHub.Api.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<UserRulesService>();
+builder.Services.AddHttpContextAccessor();
 
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/auth/login";
+        options.AccessDeniedPath = "/auth/forbidden";
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminGeneralOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, AppRoles.AdministradorGeneral));
+});
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("StartupMigration");
+    try
+    {
+        await db.Database.MigrateAsync();
+        await SeedData.InitializeAsync(db, logger);
+        logger.LogInformation("Migraciones y seed ejecutados correctamente.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogCritical(ex, "Fallo durante AutoMigrate/SeedData al iniciar la aplicación.");
+        throw;
+    }
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
+if (!app.Environment.IsDevelopment())
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
+    app.UseExceptionHandler("/Home/Error");
+}
+else
 {
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+    app.UseDeveloperExceptionPage();
+}
 
-app.MapGet("/api/health", async (AppDbContext db) =>
+app.UseExceptionHandler(errorApp =>
 {
-    if (!db.Pings.Any())
+    errorApp.Run(async context =>
     {
-        db.Pings.Add(new Ping { Message = "db ok" });
-        await db.SaveChangesAsync();
-    }
+        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("GlobalException");
+        var errorFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (errorFeature?.Error is not null)
+        {
+            logger.LogError(errorFeature.Error, "Excepción no controlada en ruta {Path}", context.Request.Path);
+        }
 
-    return Results.Ok(new { status = "ok", db = "ok", count = db.Pings.Count() });
+        context.Response.Redirect("/Home/Error?showAlert=true");
+        await Task.CompletedTask;
+    });
 });
 
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
