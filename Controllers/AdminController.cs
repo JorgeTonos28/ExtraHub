@@ -10,18 +10,19 @@ namespace ExtraHub.Api.Controllers;
 
 [Authorize(Policy = "AdminGeneralOnly")]
 [Route("admin")]
-public class AdminController(AppDbContext db, UserRulesService rules) : Controller
+public class AdminController(AppDbContext db, UserRulesService rules, PayrollImportService payrollImportService) : Controller
 {
     [HttpGet("")]
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        return View("Dashboard", new AdminDashboardViewModel
+        var demoInsights = new AdminDashboardViewModel
         {
-            TotalUsers = await db.HubUsers.CountAsync(),
-            ActiveDepartments = await db.Departments.CountAsync(d => d.IsActive),
-            TotalPayroll = await db.PayrollEntries.CountAsync(),
-            TotalPunches = await db.PunchRecords.CountAsync()
-        });
+            TotalUsers = 126,
+            ActiveDepartments = 24,
+            TotalPayroll = 842,
+            TotalPunches = 17623
+        };
+        return View("Dashboard", demoInsights);
     }
 
     [HttpGet("usuarios")]
@@ -55,7 +56,53 @@ public class AdminController(AppDbContext db, UserRulesService rules) : Controll
     }
 
     [HttpGet("nomina")]
-    public async Task<IActionResult> Payroll() => View(await db.PayrollEntries.OrderByDescending(x => x.UpdatedAtUtc).Take(200).ToListAsync());
+    public async Task<IActionResult> Payroll(string? search = null, string field = "nombre")
+    {
+        var query = db.PayrollEntries.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim();
+            query = field.ToLowerInvariant() switch
+            {
+                "codigo" => query.Where(x => x.EmployeeCode.Contains(search)),
+                "cedula" => query.Where(x => x.Cedula.Contains(search)),
+                _ => query.Where(x => x.FullName.Contains(search))
+            };
+        }
+
+        ViewBag.Search = search;
+        ViewBag.Field = field;
+        ViewBag.TotalSalary = await query.SumAsync(x => x.MonthlySalary);
+        return View(await query.OrderBy(x => x.FullName).Take(500).ToListAsync());
+    }
+
+    [HttpPost("nomina/actualizar")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PayrollUpdate(IFormFile payrollFile, CancellationToken ct)
+    {
+        if (payrollFile is null)
+        {
+            TempData["Error"] = "Debe seleccionar un archivo Excel para actualizar la nómina.";
+            return RedirectToAction(nameof(Payroll));
+        }
+
+        var ext = Path.GetExtension(payrollFile.FileName);
+        if (!string.Equals(ext, ".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["Error"] = "Formato no permitido. Debe subir un archivo .xlsx.";
+            return RedirectToAction(nameof(Payroll));
+        }
+
+        var result = await payrollImportService.ImportAsync(payrollFile, ct);
+        if (!result.Success)
+        {
+            TempData["Error"] = result.Message;
+            return RedirectToAction(nameof(Payroll));
+        }
+
+        TempData["Success"] = $"{result.Message} Registros: {result.RowsImported}. Sumatoria salario mensual: {result.TotalMonthlySalary:N2}";
+        return RedirectToAction(nameof(Payroll));
+    }
 
     [HttpGet("departamentos")]
     public async Task<IActionResult> Departments()

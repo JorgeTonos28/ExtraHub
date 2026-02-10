@@ -4,25 +4,29 @@
     var departments = ViewBag.Departments as List<Department> ?? [];
     var apps = ViewBag.Apps as List<AppModule> ?? [];
 }
-<h3 class="text-white">Crear / Modificar Usuario</h3>
-<div class="glass p-3 mb-4">
-<form method="post" action="/admin/usuarios" class="row g-2">
-    @Html.AntiForgeryToken()
-    <div class="col-md-2"><input name="EmployeeCode" class="form-control" placeholder="Código" required /></div>
-    <div class="col-md-4"><input name="FullName" class="form-control" placeholder="Nombre" required /></div>
-    <div class="col-md-3"><input name="Email" type="email" class="form-control" placeholder="Correo" required /></div>
-    <div class="col-md-3"><input name="Position" class="form-control" placeholder="Cargo" required /></div>
-    <div class="col-md-2"><input name="CorporateLevel" type="number" min="1" max="10" class="form-control" placeholder="Nivel" required /></div>
-    <div class="col-md-3"><select name="DepartmentId" class="form-select" required>@foreach (var d in departments){<option value="@d.Id">@d.Name</option>}</select></div>
-    <div class="col-md-3"><select name="RoleId" class="form-select" required>@foreach (var r in roles){<option value="@r.Id">@r.Name</option>}</select></div>
-    <div class="col-md-4">
-        @foreach (var a in apps) {<label class="text-white me-2"><input type="checkbox" name="apps" value="@a.Id"/> @a.Name</label>}
-    </div>
-    <div class="col-md-12"><button class="btn btn-primary">Crear usuario</button></div>
-</form>
+<div class="panel-card p-4 slide-up">
+    <h3>Crear / Modificar Usuario</h3>
+    <form method="post" action="/admin/usuarios" class="row g-2 mt-2">
+        @Html.AntiForgeryToken()
+        <div class="col-md-2"><input name="EmployeeCode" class="form-control" placeholder="Código" required /></div>
+        <div class="col-md-4"><input name="FullName" class="form-control" placeholder="Nombre" required /></div>
+        <div class="col-md-3"><input name="Email" type="email" class="form-control" placeholder="Correo" required /></div>
+        <div class="col-md-3"><input name="Position" class="form-control" placeholder="Cargo" required /></div>
+        <div class="col-md-2"><input name="CorporateLevel" type="number" min="1" max="10" class="form-control" placeholder="Nivel" required /></div>
+        <div class="col-md-3"><select name="DepartmentId" class="form-select" required>@foreach (var d in departments){<option value="@d.Id">@d.Name</option>}</select></div>
+        <div class="col-md-3"><select name="RoleId" class="form-select" required>@foreach (var r in roles){<option value="@r.Id">@r.Name</option>}</select></div>
+        <div class="col-md-4 d-flex flex-wrap gap-2 align-items-center">
+            @foreach (var a in apps) {<label class="chip"><input type="checkbox" name="apps" value="@a.Id"/> @a.Name</label>}
+        </div>
+        <div class="col-md-12"><button class="btn btn-dark">Crear usuario</button></div>
+    </form>
 </div>
 
-<table class="table table-dark table-striped">
-<thead><tr><th>Código</th><th>Nombre</th><th>Rol</th><th>Departamento</th></tr></thead>
-<tbody>@foreach (var u in Model){<tr><td>@u.EmployeeCode</td><td>@u.FullName</td><td>@u.Role?.Name</td><td>@u.Department?.Name</td></tr>}</tbody>
-</table>
+<div class="panel-card p-3 mt-3">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle">
+            <thead><tr><th>Código</th><th>Nombre</th><th>Rol</th><th>Departamento</th></tr></thead>
+            <tbody>@foreach (var u in Model){<tr><td>@u.EmployeeCode</td><td>@u.FullName</td><td>@u.Role?.Name</td><td>@u.Department?.Name</td></tr>}</tbody>
+        </table>
+    </div>
+</div>

@@ -1,6 +1,51 @@
-body.hub-bg { background: linear-gradient(135deg,#1f3c88,#39a0ed); min-height:100vh; }
-.glass { background: rgba(255,255,255,.15); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,.2); border-radius: 16px; }
-.fade-in { animation: fadein .8s ease-in; }
-.slide-up { animation: slideup .6s ease-out; }
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #111827;
+}
+body.app-bg { background: radial-gradient(circle at top right,#eef2ff,#f8fafc 35%,#f4f6fb); color: var(--text); min-height: 100vh; }
+.app-shell { display: flex; min-height: 100vh; }
+.sidebar-panel { width: 260px; background: #fff; border-right:1px solid var(--border); padding: 1.2rem 1rem; position: sticky; top:0; height:100vh; }
+.brand-area { display:flex; gap:.75rem; align-items:center; margin-bottom: 1.5rem; }
+.brand-icon { width: 42px; height:42px; border-radius: 12px; background:#111827; color:#fff; display:grid; place-items:center; }
+.brand-area small { color: var(--muted); display:block; }
+.side-nav { display:flex; flex-direction:column; gap:.4rem; }
+.side-link { color:#334155; text-decoration:none; padding:.62rem .72rem; border-radius:10px; display:flex; gap:.55rem; align-items:center; }
+.side-link:hover { background:#f1f5f9; color:#0f172a; }
+.content-panel { flex:1; }
+.topbar-panel { background:#fff; border-bottom:1px solid var(--border); padding:.8rem 1.25rem; display:flex; align-items:center; position:sticky; top:0; z-index:100; }
+.logo-pill { text-decoration:none; color:#fff; background:#111827; padding:.45rem .8rem; border-radius:999px; font-weight:700; }
+.hero-card,.panel-card,.auth-card,.module-card,.coming-soon-card,.kpi-card,.dashboard-header { background:var(--card); border:1px solid var(--border); border-radius: 18px; box-shadow:0 8px 24px rgba(15,23,42,.06); }
+.hero-card { padding:2.2rem; }
+.hero-card h1 { font-weight:700; }
+.hero-card p { color:var(--muted); max-width:760px; }
+.auth-card { padding:2rem; }
+.auth-card h2 { font-size:1.55rem; font-weight:700; }
+.auth-card p { color:var(--muted); margin-top:.45rem; }
+.form-control,.form-select { border-radius:12px; border:1px solid #dbe1ea; }
+.form-control:focus,.form-select:focus { box-shadow: 0 0 0 .2rem rgba(17,24,39,.1); border-color:#94a3b8; }
+.module-card { padding:1.4rem; }
+.module-card h5 { font-weight:700; margin:.8rem 0 .4rem; }
+.module-card p { color:var(--muted); }
+.module-icon { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; background:#111827; color:#fff; }
+.dashboard-header { padding:1.4rem 1.6rem; margin-bottom:1rem; }
+.dashboard-header p { margin:0; color:var(--muted); }
+.kpi-card { padding:1rem 1.1rem; }
+.kpi-card span { color:var(--muted); font-size:.9rem; }
+.kpi-card h3 { margin:.3rem 0 0; font-size:1.7rem; }
+.demo-chart { height:220px; border-radius:14px; background: linear-gradient(180deg,#e2e8f0,#f8fafc); position:relative; overflow:hidden; }
+.demo-chart:after { content:""; position:absolute; left:10px; right:10px; bottom:35px; height:2px; background:#94a3b8; box-shadow: 40px -35px 0 0 #334155, 90px -15px 0 0 #334155, 150px -70px 0 0 #334155, 230px -48px 0 0 #334155, 300px -95px 0 0 #334155; }
+.table-modern { --bs-table-bg: transparent; }
+.table-modern thead th { background:#f8fafc; color:#334155; border-bottom:1px solid #dbe4ef; }
+.table-modern td { border-bottom:1px solid #edf2f7; }
+.chip { padding:.35rem .6rem; border:1px solid #dbe4ef; border-radius:999px; font-size:.9rem; background:#f8fafc; }
+.coming-soon-card { padding:3rem; text-align:center; max-width:760px; margin:3rem auto; }
+.coming-icon { width:72px; height:72px; margin:0 auto 1rem; border-radius:20px; background:#111827; color:#fff; display:grid; place-items:center; font-size:1.8rem; }
+.fade-in { animation: fadein .6s ease-in; }
+.slide-up { animation: slideup .5s ease-out; }
 @keyframes fadein { from {opacity:0;} to {opacity:1;} }
-@keyframes slideup { from {opacity:0; transform:translateY(18px);} to {opacity:1; transform:translateY(0);} }
+@keyframes slideup { from {opacity:0; transform:translateY(14px);} to {opacity:1; transform:translateY(0);} }
+@media (max-width: 992px){ .sidebar-panel { display:none; } }

@@ -89,7 +89,10 @@ public class PayrollEntry
     [MaxLength(20)] public string EmployeeCode { get; set; } = string.Empty;
     [MaxLength(20)] public string Cedula { get; set; } = string.Empty;
     [MaxLength(200)] public string FullName { get; set; } = string.Empty;
+    [MaxLength(200)] public string Department { get; set; } = string.Empty;
     [MaxLength(200)] public string Position { get; set; } = string.Empty;
+    [Range(0, double.MaxValue)] public decimal MonthlySalary { get; set; }
+    [Range(0, double.MaxValue)] public decimal VehicleCompensation { get; set; }
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }
 

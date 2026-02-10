@@ -1,3 +1,7 @@
 @model List<Management>
-<h3 class="text-white">Gerencias</h3>
-<table class="table table-dark"><thead><tr><th>Nombre</th><th>Activa</th></tr></thead><tbody>@foreach(var g in Model){<tr><td>@g.Name</td><td>@g.IsActive</td></tr>}</tbody></table>
+<div class="panel-card p-4 slide-up">
+    <h3>Gerencias</h3>
+    <div class="table-responsive">
+        <table class="table table-modern"><thead><tr><th>Nombre</th><th>Activa</th></tr></thead><tbody>@foreach(var g in Model){<tr><td>@g.Name</td><td>@(g.IsActive?"Sí":"No")</td></tr>}</tbody></table>
+    </div>
+</div>

@@ -1,23 +1,21 @@
 @model ExtraHub.Api.ViewModels.LoginViewModel
-<div class="row justify-content-center slide-up">
-    <div class="col-md-5">
-        <div class="card glass shadow-lg border-0">
-            <div class="card-body p-4">
-                <h2 class="text-white mb-3"><i class="bi bi-shield-lock"></i> Iniciar sesión</h2>
-                <p class="text-white-50">Accede al Hub corporativo.</p>
-                <form method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label class="form-label text-white">Usuario o correo</label>
-                        <input asp-for="Login" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-white">Contraseña</label>
-                        <input asp-for="Password" class="form-control" />
-                    </div>
-                    <button class="btn btn-primary w-100">Entrar</button>
-                </form>
-            </div>
+<div class="row justify-content-center mt-5 slide-up">
+    <div class="col-md-5 col-lg-4">
+        <div class="auth-card">
+            <h2><i class="bi bi-shield-lock"></i> Iniciar sesión</h2>
+            <p>Accede a tu hub de productividad empresarial.</p>
+            <form method="post" class="mt-4">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Usuario o correo</label>
+                    <input asp-for="Login" class="form-control form-control-lg" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Contraseña</label>
+                    <input asp-for="Password" class="form-control form-control-lg" />
+                </div>
+                <button class="btn btn-dark w-100 btn-lg">Entrar</button>
+            </form>
         </div>
     </div>
 </div>

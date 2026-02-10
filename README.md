@@ -36,13 +36,14 @@ No se requiere correr `dotnet ef database update` manualmente para entorno de ej
 ## Módulos implementados
 - Login.
 - Landing/index con apps habilitadas por usuario y acceso a panel admin según rol.
-- Panel administrativo con:
-  - Dashboard
+- Panel administrativo con side-menu moderno y módulos:
+  - Dashboard (insights demo)
   - Crear/Modificar Usuario
-  - Nómina
+  - Nómina (importación Excel + búsqueda + sumatoria de salario)
   - Departamentos
   - Gerencias (nuevo)
   - Ponchado
+- Landing pages de estado "en desarrollo" para Horas Extras, Refrigerios y Combustible.
 
 ## Lógica de nómina (resumen)
 El módulo de nómina mantiene entradas con código, cédula, nombre, cargo y marca de actualización. La idea operativa es cargar/actualizar registros de empleados y conservar la última fecha de actualización para trazabilidad. Esta base permite implementar reconciliación de personal activo y validación cruzada contra usuarios del Hub.
@@ -90,3 +91,11 @@ En runtime normal, `Program.cs` ya aplica migraciones pendientes automáticament
 - Mantener TLS extremo a extremo o terminar TLS en el proxy (IIS/Nginx/Azure App Service) y reenviar tráfico interno seguro.
 - No deshabilitar `UseHttpsRedirection` ni `Secure` en cookies de autenticación.
 - Validar certificados y cabeceras de proxy en entornos productivos.
+
+
+## Módulo de Nómina (paridad con Legacy)
+- Se validan encabezados del archivo Excel y el indicador `INFOTEP` en `A1` por hoja.
+- Se cargan columnas legacy: `Código`, `Nombre`, `Cédula`, `Departamento`, `Cargo o Posición`, `Salario Mensual`, `Compensación`.
+- El botón **Actualizar** permite cargar `.xlsx`; el proceso reemplaza la tabla de nómina para mantener sincronización completa con fuente oficial.
+- Se calcula y muestra en UI la sumatoria de salario mensual de la vista filtrada.
+- Búsqueda por `código`, `nombre` o `cédula`.

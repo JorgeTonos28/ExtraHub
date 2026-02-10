@@ -1,4 +1,57 @@
 @model List<PayrollEntry>
-<h3 class="text-white">Nómina</h3>
-<p class="text-white-50">Este módulo mostrará actualizaciones de nómina cargadas y validadas.</p>
-<table class="table table-dark"><thead><tr><th>Código</th><th>Cédula</th><th>Nombre</th><th>Cargo</th><th>Actualizado</th></tr></thead><tbody>@foreach(var n in Model){<tr><td>@n.EmployeeCode</td><td>@n.Cedula</td><td>@n.FullName</td><td>@n.Position</td><td>@n.UpdatedAtUtc</td></tr>}</tbody></table>
+@{
+    var search = ViewBag.Search as string;
+    var field = ViewBag.Field as string ?? "nombre";
+    decimal total = ViewBag.TotalSalary ?? 0m;
+}
+<div class="panel-card p-4 slide-up">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1">Nómina</h3>
+            <p class="text-muted mb-0">Columnas legacy: Código, Nombre, Cédula, Departamento, Cargo o Posición, Salario, Compensación.</p>
+        </div>
+        <form method="post" action="/admin/nomina/actualizar" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+            @Html.AntiForgeryToken()
+            <input type="file" name="payrollFile" class="form-control" accept=".xlsx" required />
+            <button class="btn btn-dark"><i class="bi bi-upload"></i> Actualizar</button>
+        </form>
+    </div>
+
+    <form method="get" class="row g-2 mt-3">
+        <div class="col-md-3">
+            <select name="field" class="form-select">
+                <option value="nombre" selected="@(field=="nombre")">Nombre</option>
+                <option value="codigo" selected="@(field=="codigo")">Código</option>
+                <option value="cedula" selected="@(field=="cedula")">Cédula</option>
+            </select>
+        </div>
+        <div class="col-md-6"><input name="search" value="@search" class="form-control" placeholder="Buscar en nómina..." /></div>
+        <div class="col-md-3 d-grid"><button class="btn btn-outline-dark">Buscar</button></div>
+    </form>
+
+    <div class="mt-3 mb-2"><span class="badge text-bg-light">Sumatoria salario mensual: @total.ToString("N2")</span></div>
+
+    <div class="table-responsive">
+        <table class="table table-modern align-middle">
+            <thead>
+                <tr>
+                    <th>Código</th><th>Nombre</th><th>Cédula</th><th>Departamento</th><th>Cargo o Posición</th><th>Salario</th><th>Compensación</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var n in Model)
+            {
+                <tr>
+                    <td>@n.EmployeeCode</td>
+                    <td>@n.FullName</td>
+                    <td>@n.Cedula</td>
+                    <td>@n.Department</td>
+                    <td>@n.Position</td>
+                    <td>@n.MonthlySalary.ToString("N2")</td>
+                    <td>@n.VehicleCompensation.ToString("N2")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

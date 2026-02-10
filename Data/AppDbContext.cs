@@ -20,5 +20,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<HubUser>().HasIndex(u => u.EmployeeCode).IsUnique();
         modelBuilder.Entity<HubUser>().HasIndex(u => u.Email).IsUnique();
         modelBuilder.Entity<UserAppAccess>().HasIndex(x => new { x.HubUserId, x.AppModuleId }).IsUnique();
+        modelBuilder.Entity<PayrollEntry>().Property(x => x.MonthlySalary).HasPrecision(18, 2);
+        modelBuilder.Entity<PayrollEntry>().Property(x => x.VehicleCompensation).HasPrecision(18, 2);
     }
 }

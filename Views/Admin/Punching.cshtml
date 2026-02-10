@@ -1,4 +1,8 @@
 @model List<PunchRecord>
-<h3 class="text-white">Ponchado</h3>
-<div class="alert alert-info">Integra Google Sheets vía secretos en configuración segura (ver README).</div>
-<table class="table table-dark"><thead><tr><th>Código</th><th>Fecha/Hora</th><th>Origen</th><th>Dispositivo</th></tr></thead><tbody>@foreach(var p in Model){<tr><td>@p.EmployeeCode</td><td>@p.PunchTimeLocal</td><td>@p.Source</td><td>@p.Device</td></tr>}</tbody></table>
+<div class="panel-card p-4 slide-up">
+    <h3>Ponchado</h3>
+    <div class="alert alert-info">Integra Google Sheets vía secretos en configuración segura (ver README).</div>
+    <div class="table-responsive">
+        <table class="table table-modern"><thead><tr><th>Código</th><th>Fecha/Hora</th><th>Origen</th><th>Dispositivo</th></tr></thead><tbody>@foreach(var p in Model){<tr><td>@p.EmployeeCode</td><td>@p.PunchTimeLocal</td><td>@p.Source</td><td>@p.Device</td></tr>}</tbody></table>
+    </div>
+</div>

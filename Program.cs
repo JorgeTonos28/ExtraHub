@@ -13,6 +13,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<UserRulesService>();
+builder.Services.AddScoped<PayrollImportService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services

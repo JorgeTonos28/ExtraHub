@@ -27,16 +27,21 @@ public static class SeedData
 
         var modules = new[]
         {
-            new AppModule { Name = "Horas Extras", Route = "#" },
-            new AppModule { Name = "Refrigerios", Route = "#" },
-            new AppModule { Name = "Combustible", Route = "#" }
+            new AppModule { Name = "Horas Extras", Route = "/apps/horas-extras" },
+            new AppModule { Name = "Refrigerios", Route = "/apps/refrigerios" },
+            new AppModule { Name = "Combustible", Route = "/apps/combustible" }
         };
 
         foreach (var module in modules)
         {
-            if (!await db.AppModules.AnyAsync(a => a.Name == module.Name))
+            var existing = await db.AppModules.FirstOrDefaultAsync(a => a.Name == module.Name);
+            if (existing is null)
             {
                 db.AppModules.Add(module);
+            }
+            else if (!string.Equals(existing.Route, module.Route, StringComparison.OrdinalIgnoreCase))
+            {
+                existing.Route = module.Route;
             }
         }
 
